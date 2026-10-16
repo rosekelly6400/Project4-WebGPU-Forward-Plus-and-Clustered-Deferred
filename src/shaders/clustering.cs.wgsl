@@ -70,7 +70,7 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
 
     //     - Store the number of lights assigned to this cluster.
     clusterSet.clusters[clusterIdx].numLights = 0;
-    for (var lightIdx = 0u; lightIdx < lightSet.numLights && clusterSet.clusters[clusterIdx].numLights < 100; lightIdx++) {
+    for (var lightIdx = 0u; lightIdx < lightSet.numLights && clusterSet.clusters[clusterIdx].numLights < 82; lightIdx++) {
         let light = lightSet.lights[lightIdx];
         let clusterCenter = (clusterSet.clusters[clusterIdx].maxCornerXY + clusterSet.clusters[clusterIdx].minCornerXY) / 2.f;
         if(distance(clusterCenter, light.screenPos) < (light.screenRadius+clusterRadius)) {

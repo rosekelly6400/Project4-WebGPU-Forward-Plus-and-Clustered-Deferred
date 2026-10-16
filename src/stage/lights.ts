@@ -15,15 +15,17 @@ export class Lights {
 
     numLights = 500;
     static readonly maxNumLights = 5000;
-    static readonly numFloatsPerLight = 8; // vec3f is aligned at 16 byte boundaries
+    // colors are different for 8 and it still works?
+    static readonly numFloatsPerLight = 11; // 2 vec3f aligned at 16 byte boundaries + vec2f + float
 
-    static readonly maxNumLightsPerCluster = 100;
-    static readonly numFloatsPerCluster = 23 + Lights.maxNumLightsPerCluster*Lights.numFloatsPerLight; // vec3f is aligned at 16 byte boundaries
+    static readonly maxNumLightsPerCluster = 82;
+    static readonly numFloatsPerCluster = 24 + Lights.maxNumLightsPerCluster*Lights.numFloatsPerLight; // vec3f is aligned at 16 byte boundaries
+    static readonly maxNumClusters = (shaders.constants.numClustersInRow+2)*(shaders.constants.numClustersInRow+2);
 
     static readonly lightIntensity = 0.1;
 
     lightsArray = new Float32Array(Lights.maxNumLights * Lights.numFloatsPerLight);
-    clustersArray = new Float32Array(Lights.numFloatsPerCluster * shaders.constants.numClustersInRow * shaders.constants.numClustersInRow );
+    clustersArray = new Float32Array(Lights.numFloatsPerCluster * Lights.maxNumClusters );
     lightSetStorageBuffer: GPUBuffer;
 
     timeUniformBuffer: GPUBuffer;
@@ -53,7 +55,7 @@ export class Lights {
 
         this.lightSetStorageBuffer = device.createBuffer({
             label: "lights",
-            size: 16 + this.lightsArray.byteLength, // 16 for numLights + padding
+            size: 16 + this.lightsArray.byteLength, // 16 for numClusters + padding
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
         });
         this.populateLightsBuffer();
@@ -68,7 +70,7 @@ export class Lights {
         this.clusterSetStorageBuffer = device.createBuffer({
             // TODO : change below to be based on number of clusters from set value
             label: "clusters",
-            size: 16 + this.lightsArray.byteLength, // 16 for numLights + padding
+            size: 16 + this.clustersArray.byteLength, // 16 for numLights + padding
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
         });
         device.queue.writeBuffer(this.clusterSetStorageBuffer, 0, new Uint32Array([this.numLights]));
@@ -339,7 +341,7 @@ export class Lights {
         device.queue.writeBuffer(this.nearPlaneUniformBuffer, 0, new Float32Array([Camera.nearPlane]));
         device.queue.writeBuffer(this.farPlaneUniformBuffer, 0, new Float32Array([Camera.farPlane]));
         device.queue.writeBuffer(this.lightRadiusBuffer, 0, new Float32Array([shaders.constants.lightRadius]));
-        device.queue.writeBuffer(this.clusterRadiusBuffer, 0, new Float32Array([Math.sqrt(clusterWidth*clusterWidth + clusterHeight*clusterHeight)]));
+        device.queue.writeBuffer(this.clusterRadiusBuffer, 0, new Float32Array([Math.sqrt(clusterWidth*clusterWidth + clusterHeight*clusterHeight)/2]));
         
         
         const computePass = encoder.beginComputePass();
