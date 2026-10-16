@@ -17,7 +17,7 @@ export class Lights {
     static readonly maxNumLights = 5000;
     static readonly numFloatsPerLight = 8; // vec3f is aligned at 16 byte boundaries
 
-    static readonly maxNumLightsPerCluster = 30;
+    static readonly maxNumLightsPerCluster = 100;
     static readonly numFloatsPerCluster = 23 + Lights.maxNumLightsPerCluster*Lights.numFloatsPerLight; // vec3f is aligned at 16 byte boundaries
 
     static readonly lightIntensity = 0.1;
@@ -41,6 +41,8 @@ export class Lights {
     screenHeightUniformBuffer: GPUBuffer;
     nearPlaneUniformBuffer: GPUBuffer;
     farPlaneUniformBuffer: GPUBuffer;
+    lightRadiusBuffer: GPUBuffer;
+    clusterRadiusBuffer: GPUBuffer;
 
     createClustersComputeBindGroupLayout: GPUBindGroupLayout;
     createClustersComputeBindGroup: GPUBindGroup;
@@ -106,6 +108,16 @@ export class Lights {
             size: 4,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
         });
+        this.lightRadiusBuffer = device.createBuffer({
+            label: "light radius uniform",
+            size: 4,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
+        this.clusterRadiusBuffer = device.createBuffer({
+            label: "far plane uniform",
+            size: 4,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        });
 
         this.moveLightsComputeBindGroupLayout = device.createBindGroupLayout({
             label: "move lights compute bind group layout",
@@ -132,6 +144,11 @@ export class Lights {
                 },
                 { // screen width
                     binding: 4,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: { type: "uniform" }
+                },
+                { // light radius
+                    binding: 5,
                     visibility: GPUShaderStage.COMPUTE,
                     buffer: { type: "uniform" }
                 }
@@ -161,6 +178,10 @@ export class Lights {
                 {
                     binding: 4,
                     resource: { buffer: this.screenWidthUniformBuffer }
+                },
+                {
+                    binding: 5,
+                    resource: { buffer: this.lightRadiusBuffer }
                 }
             ]
         });
@@ -223,6 +244,11 @@ export class Lights {
                     binding: 7,
                     visibility: GPUShaderStage.COMPUTE,
                     buffer: { type: "storage" }
+                },
+                { // cluster radius
+                    binding: 8,
+                    visibility: GPUShaderStage.COMPUTE,
+                    buffer: { type: "uniform" }
                 }
             ]
         });
@@ -262,6 +288,10 @@ export class Lights {
                 {
                     binding: 7,
                     resource: { buffer: this.lightSetStorageBuffer }
+                },
+                {
+                    binding: 8,
+                    resource: { buffer: this.clusterRadiusBuffer}
                 }
             ]
         });
@@ -299,13 +329,17 @@ export class Lights {
     doLightClustering(encoder: GPUCommandEncoder) {
         // TODO-2: run the light clustering compute pass(es) here
         // implementing clustering here allows for reusing the code in both Forward+ and Clustered Deferred
-        device.queue.writeBuffer(this.widthUniformBuffer, 0, new Float32Array([Math.floor(canvas.width/shaders.constants.numClustersInRow)]));
-        device.queue.writeBuffer(this.heightUniformBuffer, 0, new Float32Array([Math.floor(canvas.height/shaders.constants.numClustersInRow)]));
+        let clusterWidth = Math.floor(canvas.width/shaders.constants.numClustersInRow);
+        let clusterHeight = Math.floor(canvas.height/shaders.constants.numClustersInRow);
+        device.queue.writeBuffer(this.widthUniformBuffer, 0, new Float32Array([clusterWidth]));
+        device.queue.writeBuffer(this.heightUniformBuffer, 0, new Float32Array([clusterHeight]));
         device.queue.writeBuffer(this.screenWidthUniformBuffer, 0, new Float32Array([canvas.width]));
         device.queue.writeBuffer(this.screenHeightUniformBuffer, 0, new Float32Array([canvas.height]));
         device.queue.writeBuffer(this.clusterRowLengthUniformBuffer, 0, new Float32Array([shaders.constants.numClustersInRow]));
         device.queue.writeBuffer(this.nearPlaneUniformBuffer, 0, new Float32Array([Camera.nearPlane]));
         device.queue.writeBuffer(this.farPlaneUniformBuffer, 0, new Float32Array([Camera.farPlane]));
+        device.queue.writeBuffer(this.lightRadiusBuffer, 0, new Float32Array([shaders.constants.lightRadius]));
+        device.queue.writeBuffer(this.clusterRadiusBuffer, 0, new Float32Array([Math.sqrt(clusterWidth*clusterWidth + clusterHeight*clusterHeight)]));
         
         
         const computePass = encoder.beginComputePass();

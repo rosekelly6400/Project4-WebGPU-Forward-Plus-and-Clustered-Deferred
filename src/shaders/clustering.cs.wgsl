@@ -6,6 +6,7 @@
 @group(${bindGroup_scene}) @binding(5) var<uniform> farplane: f32;
 @group(${bindGroup_scene}) @binding(6) var<uniform> camUniforms: CameraUniforms;
 @group(${bindGroup_scene}) @binding(7) var<storage, read_write> lightSet: LightSet;
+@group(${bindGroup_scene}) @binding(8) var<uniform> clusterRadius: f32;
 
 // TODO-2: implement the light clustering compute shader
 
@@ -69,13 +70,13 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
 
     //     - Store the number of lights assigned to this cluster.
     clusterSet.clusters[clusterIdx].numLights = 0;
-    for (var lightIdx = 0u; lightIdx < lightSet.numLights && clusterSet.clusters[clusterIdx].numLights < 30; lightIdx++) {
+    for (var lightIdx = 0u; lightIdx < lightSet.numLights && clusterSet.clusters[clusterIdx].numLights < 100; lightIdx++) {
         let light = lightSet.lights[lightIdx];
-        if (light.screenPos.x < clusterSet.clusters[clusterIdx].maxCornerXY.x && light.screenPos.x > clusterSet.clusters[clusterIdx].minCornerXY.x) {
-            if(light.screenPos.y < clusterSet.clusters[clusterIdx].maxCornerXY.y && light.screenPos.y > clusterSet.clusters[clusterIdx].minCornerXY.y) {
+        let clusterCenter = (clusterSet.clusters[clusterIdx].maxCornerXY + clusterSet.clusters[clusterIdx].minCornerXY) / 2.f;
+        if(distance(clusterCenter, light.screenPos) < (light.screenRadius+clusterRadius)) {
                 clusterSet.clusters[clusterIdx].lights[clusterSet.clusters[clusterIdx].numLights] = light;
                 clusterSet.clusters[clusterIdx].numLights ++;
-            }
+                continue;
         }
     }
 }

@@ -1,6 +1,7 @@
 // CHECKITOUT: code that you add here will be prepended to all shaders
 
 struct Light {
+    screenRadius: f32,
     screenPos: vec2f,
     pos: vec3f,
     color: vec3f
@@ -11,7 +12,7 @@ struct LightSet {
     lights: array<Light>
 }
 
-// MAX NUMBER OF LIGHTS IS 30
+// MAX NUMBER OF LIGHTS IS 100
 struct Cluster {
     numLights: u32,
     minDepth: f32,
@@ -23,7 +24,7 @@ struct Cluster {
     backMax: vec4f,
     frontMin: vec4f,
     frontMax: vec4f,
-    lights: array<Light, 30>
+    lights: array<Light, 100>
 }
 
 // TODO-2: you may want to create a ClusterSet struct similar to LightSet

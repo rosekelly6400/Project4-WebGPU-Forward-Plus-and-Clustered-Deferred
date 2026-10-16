@@ -49,10 +49,10 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
     // COLORS TO DISPLAY FOR DEBUGGING
     let idxColor = f32(clusterIndex)/f32(clusterSet.numClusters);
-    let numLightsColor = f32(currCluster.numLights)/f32(20);
-    //return vec4(idxColor, idxColor, idxColor, 1);
-    return vec4(numLightsColor, numLightsColor, numLightsColor, 1);
-    //return vec4(cluster.frontMin.xyz, 1);
+    // let numLightsColor = f32(currCluster.numLights)/f32(200);
+    // //return vec4(idxColor, idxColor, idxColor, 1);
+    // return vec4(numLightsColor, numLightsColor, numLightsColor, 1);
+    // //return vec4(cluster.frontMin.xyz, 1);
 
     let diffuseColor = textureSample(diffuseTex, diffuseTexSampler, in.uv);
     if (diffuseColor.a < 0.5f) {
