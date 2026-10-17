@@ -35,18 +35,40 @@ fn main(in: FragmentInput) -> FragmentOutput
 {
     var out: FragmentOutput;
 
+    // grab values from gbuffer textures
     let fragposUV = vec2f(in.fragPos.x / (8*screenWidth), in.fragPos.y / (8*screenHeight));
     let normalFromTex = textureSample(normalDepth, normalDepthSampler, fragposUV);
     let diffuseColor = textureSample(color, colorSampler, fragposUV);
     let posFromTex =  textureSample(positionTex, positionTexSampler, fragposUV);
 
+    // calculate cluster index from pixel pos
+    let clusterHeight = u32(screenHeight);
+    let clusterWidth = u32(screenWidth);
+    let clustersPerRow = u32(clusterRowLength);
+    let intFragX = u32(in.fragPos.x);
+    let intFragY = u32(in.fragPos.y);
+    let clusterX = intFragX/clusterWidth;
+    let clusterY = intFragY/clusterHeight;
+    let clusterIndex = clusterY*clustersPerRow + clusterX;
+
+    let currCluster = clusterSet.clusters[clusterIndex];
+
+    // COLORS TO DISPLAY FOR CLUSTER DEBUGGING
+    // let idxColor = f32(clusterIndex)/f32(clusterSet.numClusters);
+    // out.color = vec4(idxColor, idxColor, idxColor, 1);
+
     var totalLightContrib = vec3f(0, 0, 0);
 
     // naive light calculation
-    for (var lightIdx = 0u; lightIdx < lightSet.numLights; lightIdx++) {
-        let light = lightSet.lights[lightIdx];
+    // for (var lightIdx = 0u; lightIdx < lightSet.numLights; lightIdx++) {
+    //     let light = lightSet.lights[lightIdx];
+    //     totalLightContrib += calculateLightContrib(light, posFromTex.xyz, normalFromTex.xyz);
+    // }
+
+    // cluster based light calc
+    for (var lightIdx = 0u; lightIdx < currCluster.numLights; lightIdx++) {
+        let light = currCluster.lights[lightIdx];
         totalLightContrib += calculateLightContrib(light, posFromTex.xyz, normalFromTex.xyz);
-        out.color = vec4f(light.pos, 1);
     }
 
     var finalColor = diffuseColor.rgb * totalLightContrib;
