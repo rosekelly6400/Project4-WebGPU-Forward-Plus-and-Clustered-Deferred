@@ -18,8 +18,8 @@ export class Lights {
     // colors are different for 8 and it still works?
     static readonly numFloatsPerLight = 11; // 2 vec3f aligned at 16 byte boundaries + vec2f + float
 
-    static readonly maxNumLightsPerCluster = 82;
-    static readonly numFloatsPerCluster = 24 + Lights.maxNumLightsPerCluster*Lights.numFloatsPerLight; // vec3f is aligned at 16 byte boundaries
+    static readonly maxNumLightsPerCluster = 501;
+    static readonly numFloatsPerCluster = 10 + Lights.maxNumLightsPerCluster; 
     static readonly maxNumClusters = (shaders.constants.numClustersInRow+2)*(shaders.constants.numClustersInRow+2);
 
     static readonly lightIntensity = 0.1;

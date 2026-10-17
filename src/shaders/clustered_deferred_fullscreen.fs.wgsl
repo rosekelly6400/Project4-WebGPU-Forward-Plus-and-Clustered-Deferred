@@ -67,7 +67,8 @@ fn main(in: FragmentInput) -> FragmentOutput
 
     // cluster based light calc
     for (var lightIdx = 0u; lightIdx < currCluster.numLights; lightIdx++) {
-        let light = currCluster.lights[lightIdx];
+        let lightsetLightIdx = currCluster.lightIndices[lightIdx];
+        let light = lightSet.lights[lightsetLightIdx];
         totalLightContrib += calculateLightContrib(light, posFromTex.xyz, normalFromTex.xyz);
     }
 

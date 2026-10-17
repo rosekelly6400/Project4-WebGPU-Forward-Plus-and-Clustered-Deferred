@@ -27,10 +27,11 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     let intClusterRowLength = u32(clusterRowLength);
 
     let totalNumClusters = intClusterRowLength * intClusterRowLength;
-    clusterSet.numClusters = u32(totalNumClusters);
     if (clusterIdx >= totalNumClusters) {
         return;
     }
+    clusterSet.numClusters = u32(totalNumClusters);
+
     let clusterHeight = u32(screenHeight);
     let clusterWidth = u32(screenWidth);
 
@@ -40,22 +41,6 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     clusterSet.clusters[clusterIdx].minCornerXY = vec2f(f32(clusterIndexX*clusterHeight), f32(clusterIndexY*clusterWidth));
     clusterSet.clusters[clusterIdx].maxCornerXY = vec2f(f32((clusterIndexX+1)*clusterHeight), f32((clusterIndexY+1)*clusterWidth));
 
-    let frontMax = vec4f(clusterSet.clusters[clusterIdx].maxCornerXY, 1, nearplane);
-    let frontMin = vec4f(clusterSet.clusters[clusterIdx].minCornerXY, nearplane, 1);
-    let backMax = vec4f(clusterSet.clusters[clusterIdx].maxCornerXY, 1, farplane);
-    let backMin = vec4f(clusterSet.clusters[clusterIdx].minCornerXY, 1, farplane);
-
-    let frontMaxPos = camUniforms.invViewProjMat * frontMax;
-    let frontMinPos = camUniforms.invViewProjMat * frontMin;
-    let backMaxPos = camUniforms.invViewProjMat * backMax;
-    let backMinPos = camUniforms.invViewProjMat * backMin;
-
-    clusterSet.clusters[clusterIdx].frontMax = frontMaxPos;
-    clusterSet.clusters[clusterIdx].frontMin = frontMin;
-    //clusterSet.clusters[clusterIdx].frontMin = frontMinPos;
-    //clusterSet.clusters[clusterIdx].frontMin = vec4f(frontMinPos.x / frontMinPos.w, frontMinPos.y / frontMinPos.w, frontMinPos.z / frontMinPos.w, frontMinPos.w);
-    clusterSet.clusters[clusterIdx].backMax = vec4f(backMaxPos.x / backMaxPos.w, backMaxPos.y / backMaxPos.w, backMaxPos.z / backMaxPos.w, backMaxPos.w);
-    clusterSet.clusters[clusterIdx].backMin = backMinPos;
 
     // ------------------------------------
     // Assigning lights to clusters:
@@ -70,13 +55,15 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
 
     //     - Store the number of lights assigned to this cluster.
     clusterSet.clusters[clusterIdx].numLights = 0;
-    for (var lightIdx = 0u; lightIdx < lightSet.numLights && clusterSet.clusters[clusterIdx].numLights < 82; lightIdx++) {
+    var currNumLights = 0;
+    for (var lightIdx = 0u; lightIdx < lightSet.numLights && currNumLights < 501; lightIdx++) {
         let light = lightSet.lights[lightIdx];
         let clusterCenter = (clusterSet.clusters[clusterIdx].maxCornerXY + clusterSet.clusters[clusterIdx].minCornerXY) / 2.f;
         if(distance(clusterCenter, light.screenPos) < (light.screenRadius+clusterRadius)) {
-                clusterSet.clusters[clusterIdx].lights[clusterSet.clusters[clusterIdx].numLights] = light;
-                clusterSet.clusters[clusterIdx].numLights ++;
+                clusterSet.clusters[clusterIdx].lightIndices[currNumLights] = lightIdx;
+                currNumLights++;
                 continue;
         }
     }
+    clusterSet.clusters[clusterIdx].numLights = u32(currNumLights);
 }
