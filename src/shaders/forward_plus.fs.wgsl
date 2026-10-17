@@ -43,14 +43,18 @@ fn main(in: FragmentInput) -> @location(0) vec4f
     let intFragY = u32(in.fragPos.y);
     let clusterX = intFragX/clusterWidth;
     let clusterY = intFragY/clusterHeight;
-    let clusterIndex = clusterY*clustersPerRow + clusterX;
+    // CALCULATE BASED ON DEPTH
+    let fragDepth = u32(distance(in.pos, camUniforms.pos));
+    let clusterZ = fragDepth/u32(5);
+    // UPDATE TO USE Z INDEX
+    let clusterIndex = clusterZ*clustersPerRow*clustersPerRow + clusterY*clustersPerRow + clusterX;
 
     let currCluster = clusterSet.clusters[clusterIndex];
 
     // COLORS TO DISPLAY FOR DEBUGGING
     let idxColor = f32(clusterIndex)/f32(clusterSet.numClusters);
     let numLightsColor = f32(currCluster.numLights)/f32(lightSet.numLights);
-    // //return vec4(idxColor, idxColor, idxColor, 1);
+    //return vec4(idxColor, idxColor, idxColor, 1);
     //return vec4(numLightsColor, numLightsColor, numLightsColor, 1);
     // //return vec4(cluster.frontMin.xyz, 1);
 
@@ -68,6 +72,10 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
     var outputColor = diffuseColor.rgb * totalLightContrib;
     return vec4(outputColor, 1);
+
+    let fragDepthVis = distance(in.pos, camUniforms.pos)/25;
+    return vec4(fragDepthVis, fragDepthVis, fragDepthVis, 1);
+    
 
 
     

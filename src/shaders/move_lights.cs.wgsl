@@ -81,4 +81,6 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     let lightRadiusPos = vec3f(lightPos.x + lightRadius, lightPos.y, lightPos.z);
     let lightRadiusScreenPos = worldToScreen(lightRadiusPos);
     lightSet.lights[lightIdx].screenRadius = distance(lightScreenPos, lightRadiusScreenPos);
+    // calculate depth from camera here (least total calculations if done here) 
+    lightSet.lights[lightIdx].depthFromCam = distance(lightPos.xyz, camUniforms.pos);
 }

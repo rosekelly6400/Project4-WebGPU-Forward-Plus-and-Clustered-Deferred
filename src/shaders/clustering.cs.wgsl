@@ -21,12 +21,13 @@
 
 // CHECKITOUT: this is an example of a compute shader entry point function
 @compute
-@workgroup_size(${moveLightsWorkgroupSize})
+@workgroup_size(${createClustersWorkgroupSize})
 fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     let clusterIdx = u32(globalIdx.x);
     let intClusterRowLength = u32(clusterRowLength);
 
-    let totalNumClusters = intClusterRowLength * intClusterRowLength;
+    let totalNumClusterCells = u32(intClusterRowLength * intClusterRowLength); // how many 2d cells
+    let totalNumClusters = intClusterRowLength * intClusterRowLength * 5;
     if (clusterIdx >= totalNumClusters) {
         return;
     }
@@ -36,11 +37,13 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     let clusterWidth = u32(screenWidth);
 
     let clusterIndexX = clusterIdx % intClusterRowLength;
-    let clusterIndexY = clusterIdx / intClusterRowLength;
+    let clusterIndexY = (clusterIdx%totalNumClusterCells) / intClusterRowLength;
+    let clusterIndexZ = clusterIdx / totalNumClusterCells;
+
 
     clusterSet.clusters[clusterIdx].minCornerXY = vec2f(f32(clusterIndexX*clusterHeight), f32(clusterIndexY*clusterWidth));
     clusterSet.clusters[clusterIdx].maxCornerXY = vec2f(f32((clusterIndexX+1)*clusterHeight), f32((clusterIndexY+1)*clusterWidth));
-
+    // calculate depth based on z index
 
     // ------------------------------------
     // Assigning lights to clusters:
@@ -59,10 +62,19 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     for (var lightIdx = 0u; lightIdx < lightSet.numLights && currNumLights < 501; lightIdx++) {
         let light = lightSet.lights[lightIdx];
         let clusterCenter = (clusterSet.clusters[clusterIdx].maxCornerXY + clusterSet.clusters[clusterIdx].minCornerXY) / 2.f;
-        if(distance(clusterCenter, light.screenPos) < (light.screenRadius+clusterRadius)) {
-                clusterSet.clusters[clusterIdx].lightIndices[currNumLights] = lightIdx;
-                currNumLights++;
-                continue;
+        // if light intersects with 2d cluster
+        if(distance(clusterCenter, light.screenPos) < (light.screenRadius+clusterRadius*2)) {
+                // put light into cluster based on depth
+                // if(u32(light.depthFromCam) /u32(5) ==  clusterIndexZ) {
+                //     clusterSet.clusters[clusterIdx].lightIndices[currNumLights] = lightIdx;
+                //     currNumLights++;
+                //     continue;
+                // }
+                if(abs(u32(light.depthFromCam) - clusterIndexZ*5) < 2*5) {
+                    clusterSet.clusters[clusterIdx].lightIndices[currNumLights] = lightIdx;
+                    currNumLights++;
+                    continue;
+                }
         }
     }
     clusterSet.clusters[clusterIdx].numLights = u32(currNumLights);

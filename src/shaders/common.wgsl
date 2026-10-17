@@ -2,6 +2,7 @@
 
 struct Light {
     screenRadius: f32,
+    depthFromCam: f32,
     screenPos: vec2f,
     pos: vec3f,
     color: vec3f
@@ -24,14 +25,13 @@ struct Cluster {
 
 // TODO-2: you may want to create a ClusterSet struct similar to LightSet
 struct ClusterSet {
-    // numClusters should be equal to 2D cells on screen, so you can easily get cluster using cell index as index in clusters
     numClusters: u32,
-    // gonna need to track how many lights per cluster somehow?? but can only have one runtime array??
     clusters: array<Cluster>
 }
 
 struct CameraUniforms {
     // TODO-1.3: add an entry for the view proj mat (of type mat4x4f)
+    pos: vec3f,
     viewProjMat: mat4x4f,
     invViewProjMat: mat4x4f,
     viewMat: mat4x4f

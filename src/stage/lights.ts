@@ -18,9 +18,11 @@ export class Lights {
     // colors are different for 8 and it still works?
     static readonly numFloatsPerLight = 11; // 2 vec3f aligned at 16 byte boundaries + vec2f + float
 
+    static readonly maxDepth = 25; // custom value for sponza
+    static readonly numClustersPerCell = 5; // how many clusters in depth direction stacked in each cell
     static readonly maxNumLightsPerCluster = 501;
     static readonly numFloatsPerCluster = 10 + Lights.maxNumLightsPerCluster; 
-    static readonly maxNumClusters = (shaders.constants.numClustersInRow+2)*(shaders.constants.numClustersInRow+2);
+    static readonly maxNumClusters = ((shaders.constants.numClustersInRow+2)*(shaders.constants.numClustersInRow+2))*Lights.numClustersPerCell;
 
     static readonly lightIntensity = 0.1;
 
@@ -349,7 +351,7 @@ export class Lights {
 
         computePass.setBindGroup(0, this.createClustersComputeBindGroup);
 
-        const workgroupCount = Math.ceil(this.numLights / shaders.constants.createClustersWorkgroupSize);
+        const workgroupCount = Math.ceil(Lights.maxNumClusters / shaders.constants.createClustersWorkgroupSize);
         computePass.dispatchWorkgroups(workgroupCount);
 
         computePass.end();

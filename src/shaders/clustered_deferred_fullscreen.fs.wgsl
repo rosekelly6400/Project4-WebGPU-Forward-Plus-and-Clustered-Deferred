@@ -49,7 +49,11 @@ fn main(in: FragmentInput) -> FragmentOutput
     let intFragY = u32(in.fragPos.y);
     let clusterX = intFragX/clusterWidth;
     let clusterY = intFragY/clusterHeight;
-    let clusterIndex = clusterY*clustersPerRow + clusterX;
+    // CALCULATE BASED ON DEPTH
+    let fragDepth = u32(distance(posFromTex.xyz, camUniforms.pos));
+    let clusterZ = fragDepth/u32(5);
+    // UPDATE TO USE Z INDEX
+    let clusterIndex = clusterZ*clustersPerRow*clustersPerRow + clusterY*clustersPerRow + clusterX;
 
     let currCluster = clusterSet.clusters[clusterIndex];
 
@@ -74,6 +78,9 @@ fn main(in: FragmentInput) -> FragmentOutput
 
     var finalColor = diffuseColor.rgb * totalLightContrib;
     out.color = vec4f(finalColor.xyz, 1);
+
+    // let fragDepth = distance(posFromTex.xyz, camUniforms.pos)/10;
+    // //out.color = vec4(fragDepth, fragDepth, fragDepth, 1);
     
     return out;
 }
