@@ -22,6 +22,10 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
     colorTextureView: GPUTextureView;
     colorTextureSampler: GPUSampler;
 
+    positionTexture: GPUTexture;
+    positionTextureView: GPUTextureView;
+    positionTextureSampler: GPUSampler;
+
     pipeline: GPURenderPipeline;
     finalPassPipeline: GPURenderPipeline;
 
@@ -83,9 +87,23 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
             mipmapFilter: "linear"
         });
 
+        this.positionTexture = renderer.device.createTexture({
+            size: [renderer.canvas.width, renderer.canvas.height],
+            format: "rgba16float",
+            usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
+        });
+        this.positionTextureView = this.positionTexture.createView();
+        this.positionTextureSampler = renderer.device.createSampler({
+            addressModeU: "clamp-to-edge",
+            addressModeV: "clamp-to-edge",
+            magFilter: "linear",
+            minFilter:"linear",
+            mipmapFilter: "linear"
+        });
+
         this.nordepthTexture = renderer.device.createTexture({
             size: [renderer.canvas.width, renderer.canvas.height],
-            format: "bgra8unorm",
+            format: "rgba16float",
             usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
         });
         this.nordepthTextureView = this.nordepthTexture.createView();
@@ -119,6 +137,16 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
                     binding: 3,
                     visibility: GPUShaderStage.FRAGMENT,
                     sampler: {}
+                },
+                { // position 
+                    binding: 4,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    texture: {}
+                },
+                { // position sampler
+                    binding: 5,
+                    visibility: GPUShaderStage.FRAGMENT,
+                    sampler: {}
                 }
             ]
         });
@@ -142,6 +170,14 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
                 {
                     binding: 3,
                     resource: this.colorTextureSampler
+                },
+                {
+                    binding: 4,
+                    resource: this.positionTextureView
+                },
+                {
+                    binding: 5,
+                    resource: this.positionTextureSampler
                 }
             ]
         });
@@ -297,7 +333,10 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
                         format: renderer.canvasFormat,
                     },
                     {
-                        format: renderer.canvasFormat,
+                        format: "rgba16float",
+                    },
+                    {
+                        format: "rgba16float",
                     }
                 ]
             }
@@ -309,7 +348,7 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
         
 
         const renderPass = encoder.beginRenderPass({
-            label: "naive render pass",
+            label: "deferred render pre pass",
             colorAttachments: [
                 {
                     view: this.colorTextureView,
@@ -319,6 +358,12 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
                 },
                 {
                     view: this.nordepthTextureView,
+                    clearValue: [0, 0, 0, 0],
+                    loadOp: "clear",
+                    storeOp: "store"
+                },
+                {
+                    view: this.positionTextureView,
                     clearValue: [0, 0, 0, 0],
                     loadOp: "clear",
                     storeOp: "store"

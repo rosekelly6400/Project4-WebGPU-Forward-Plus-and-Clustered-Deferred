@@ -13,6 +13,8 @@
 @group(1) @binding(1) var normalDepthSampler: sampler;
 @group(1) @binding(2) var color: texture_2d<f32>;
 @group(1) @binding(3) var colorSampler: sampler;
+@group(1) @binding(4) var positionTex: texture_2d<f32>;
+@group(1) @binding(5) var positionTexSampler: sampler;
 
 struct FragmentInput
 {
@@ -33,31 +35,22 @@ fn main(in: FragmentInput) -> FragmentOutput
 {
     var out: FragmentOutput;
 
-
-    //calculate diffuse color
-    //let uv = vec2f(0.5*(in.pos.x+1), 0.5*(-in.pos.y+1));
-    // let uv = vec2f(in.fragPos.x / screenWidth, in.fragPos.y / screenHeight);
-    // let diffuseColor = textureSample(normalDepth, normalDepthSampler, uv);
-    //out.color = vec4f(diffuseColor.xyz, 1);
-    //out.color = vec4f(1,1, 0, 1);
-
-    //out.color = vec4f(in.fragPos.xyz/1000, 1);
     let fragposUV = vec2f(in.fragPos.x / (8*screenWidth), in.fragPos.y / (8*screenHeight));
-    //out.color = vec4f(fragposUV, 0, 1);
-    let normal = textureSample(normalDepth, normalDepthSampler, fragposUV);
+    let normalFromTex = textureSample(normalDepth, normalDepthSampler, fragposUV);
     let diffuseColor = textureSample(color, colorSampler, fragposUV);
-    out.color = vec4f(diffuseColor.xyz, 1);
-
-    //out.color = vec4f(diffuseColor.w, diffuseColor.w, diffuseColor.w, 1);
+    let posFromTex =  textureSample(positionTex, positionTexSampler, fragposUV);
 
     var totalLightContrib = vec3f(0, 0, 0);
+
+    // naive light calculation
     for (var lightIdx = 0u; lightIdx < lightSet.numLights; lightIdx++) {
         let light = lightSet.lights[lightIdx];
-        totalLightContrib += calculateLightContrib(light, in.pos, normalize(in.nor));
+        totalLightContrib += calculateLightContrib(light, posFromTex.xyz, normalFromTex.xyz);
+        out.color = vec4f(light.pos, 1);
     }
 
     var finalColor = diffuseColor.rgb * totalLightContrib;
-    //out.color = vec4f(finalColor.xyz, 1);
+    out.color = vec4f(finalColor.xyz, 1);
     
     return out;
 }

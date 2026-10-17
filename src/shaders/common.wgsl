@@ -54,3 +54,12 @@ fn calculateLightContrib(light: Light, posWorld: vec3f, nor: vec3f) -> vec3f {
     let lambert = max(dot(nor, normalize(vecToLight)), 0.f);
     return light.color * lambert * rangeAttenuation(distToLight);
 }
+
+// used for debugging by showing single stationary light
+fn calculateLightContribSingleLight(posWorld: vec3f, nor: vec3f) -> vec3f {
+    let vecToLight = vec3f(0.2,1,0.5) - posWorld;
+    let distToLight = length(vecToLight);
+
+    let lambert = max(dot(nor, normalize(vecToLight)), 0.f);
+    return vec3f(0,1,0) * lambert * rangeAttenuation(distToLight);
+}

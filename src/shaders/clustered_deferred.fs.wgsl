@@ -25,7 +25,8 @@ struct FragmentInput
 struct FragmentOutput
 {
     @location(0) color: vec4f,
-    @location(1) nor: vec4f
+    @location(1) nor: vec4f,
+    @location(2) pos: vec4f
 }
 
 @fragment
@@ -33,17 +34,18 @@ fn main(in: FragmentInput) -> FragmentOutput
 {
     var out: FragmentOutput;
 
-    // calculate depth
+    // calculate position
+    out.pos = vec4f(in.pos, 0);
 
     // calculate normal
-    out.nor = vec4f(in.nor.xyz, in.pos.z);
+    out.nor = vec4f(in.nor, 0);
 
     //calculate diffuse color
     let diffuseColor = textureSample(diffuseTex, diffuseTexSampler, in.uv);
     if (diffuseColor.a < 0.5f) {
         discard;
     }
-    out.color = vec4f(diffuseColor.xyz, 1);
+    out.color = vec4f(diffuseColor.xyz, 0);
     //out.color = vec4f(1,1, 0, 1);
     return out;
 }
