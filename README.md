@@ -1,6 +1,9 @@
 WebGL Forward+ and Clustered Deferred Shading
 ======================
 
+![](imgs/CoverImage.png)
+
+
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 4**
 
 * Rose Kelly
@@ -18,16 +21,10 @@ https://rosekelly6400.github.io/Project4-WebGPU-Forward-Plus-and-Clustered-Defer
 
 #### Features Implemented
 
-- Naive Forward Rendering: 
 - Forward+ (Forward Rendering with Clustered Lighting)
   - I implemented clustered lighting by splitting the screen up into a grid and splitting each cell on the camera's z axis into cubes/clusters. Each cluster tracks what lights affect fragments in that cluster and only those lights are used to calculate lighting for fragments in that cluster.
 - Deferred Rendering with Clustered Lighting
   - For this approach, I implemented two passes to handle rendering: the first pass stores the position, normal, and texture color of each fragment visible on screen, and the second pass uses the first pass's data and the same cluster lighting information mentioned in the "Forward+" approach above to calculate the final color of each pixel/fragment.
-
-- At least one screenshot of your project running
-- A 30+ second video/gif of your project running showing all features (even though your demo can be seen online, it may not run on all computers, while a video will work everywhere)
-- A link to your project's live website (see [GitHub Pages setup](#github-pages-setup))
-- Performance analysis (see [above](#performance-analysis))
 
 ## Performance Analysis
 
@@ -39,14 +36,6 @@ https://rosekelly6400.github.io/Project4-WebGPU-Forward-Plus-and-Clustered-Defer
   - The majority of the time, Clustered Deferred outperformed Forward+ in my testing. One case where they were roughly matched was when I had the camera facing a wall (behind which there was nothing but empty space). This makes sense, as the advantage of Clustered Deferred is that it doesn't waste time rendering fragments blocked by other fragments, and in the case of facing a wall, there are few to no fragments blocking other fragments. There is additional overhead for Clustered Deferred compared to Forward+ as it needs to create normal, position, and color textures in the initial pass and then do an essentially pointless vertex shader before the final fragment shader pass. However, this overhead doesn't appear signficant as even in the "wall" scenario, the two approaches are roughly even.
 - What are the benefits and tradeoffs of using one over the other:
   - Forward+ was slightly simpler to implement and in theory has less overhead, but practically I found clustered deferred to be superior in most cases.
-
-
-Optimize your TypeScript and/or WGSL code. Chrome's profiling tools are useful for this. For each change that improves performance, show the before and after render times.
-- using indices vs copying lights into cluster structure
-
-
-
-If your Forward+ or Clustered Deferred renderer is running much slower than expected, make sure you are not making copies of large structs/arrays in shader code. You can use [pointers](https://google.github.io/tour-of-wgsl/types/pointers/using/) in WGSL to avoid this issue.
 
 ### Light Clustering
   - Overview: This feature improves performance by breaking up the scene into "clusters" or essentialy boxes in the scene and assigning any lights that affect that cluster to the cluster and using that data to iterate through only the cluster's lights when calculating lighting for fragments within the cluster.
@@ -93,13 +82,3 @@ Looking at the graph shown above again, you can see that Clustered Deferred perf
 - [stats.js](https://github.com/mrdoob/stats.js)
 - [wgpu-matrix](https://github.com/greggman/wgpu-matrix)
 
-
-TODO
-- RECORD DATA + MAKE GRAPHS for clustered and deferred
-- TAKE VIDEO 
-
-
-### Bloopers
-
-
-- was writing my camera matrices into their struct by a few floats off
