@@ -16,7 +16,7 @@ https://rosekelly6400.github.io/Project4-WebGPU-Forward-Plus-and-Clustered-Defer
 
 ### Demo Video/GIF
 
-[![](img/video.mp4)](TODO)
+https://drive.google.com/file/d/1zZpz7j7VcMY9gNam5ZkAQBZQ8SZNSS89/view?usp=sharing
 
 
 #### Features Implemented
@@ -26,7 +26,7 @@ https://rosekelly6400.github.io/Project4-WebGPU-Forward-Plus-and-Clustered-Defer
 - Deferred Rendering with Clustered Lighting
   - For this approach, I implemented two passes to handle rendering: the first pass stores the position, normal, and texture color of each fragment visible on screen, and the second pass uses the first pass's data and the same cluster lighting information mentioned in the "Forward+" approach above to calculate the final color of each pixel/fragment.
 
-## Performance Analysis
+# Performance Analysis
 
 ### Forward+ vs Clustered Deferred Shading
 - Which one is faster and why:
@@ -36,6 +36,8 @@ https://rosekelly6400.github.io/Project4-WebGPU-Forward-Plus-and-Clustered-Defer
   - The majority of the time, Clustered Deferred outperformed Forward+ in my testing. One case where they were roughly matched was when I had the camera facing a wall (behind which there was nothing but empty space). This makes sense, as the advantage of Clustered Deferred is that it doesn't waste time rendering fragments blocked by other fragments, and in the case of facing a wall, there are few to no fragments blocking other fragments. There is additional overhead for Clustered Deferred compared to Forward+ as it needs to create normal, position, and color textures in the initial pass and then do an essentially pointless vertex shader before the final fragment shader pass. However, this overhead doesn't appear signficant as even in the "wall" scenario, the two approaches are roughly even.
 - What are the benefits and tradeoffs of using one over the other:
   - Forward+ was slightly simpler to implement and in theory has less overhead, but practically I found clustered deferred to be superior in most cases.
+
+## Feature Breakdown
 
 ### Light Clustering
   - Overview: This feature improves performance by breaking up the scene into "clusters" or essentialy boxes in the scene and assigning any lights that affect that cluster to the cluster and using that data to iterate through only the cluster's lights when calculating lighting for fragments within the cluster.
