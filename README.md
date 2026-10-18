@@ -107,3 +107,8 @@ Looking at the graph shown above again, you can see that Clustered Deferred perf
 - [stats.js](https://github.com/mrdoob/stats.js)
 - [wgpu-matrix](https://github.com/greggman/wgpu-matrix)
 
+#### Additional Sources
+- https://developer.mozilla.org/en-US/docs/Web/API/GPUTextureView
+- https://developer.mozilla.org/en-US/docs/Web/API/GPUDevice/createSampler
+- https://developer.mozilla.org/en-US/docs/Web/API/GPUDevice/createTexture
+
