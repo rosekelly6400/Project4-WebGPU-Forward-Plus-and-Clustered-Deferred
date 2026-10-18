@@ -48,19 +48,42 @@ https://drive.google.com/file/d/1zZpz7j7VcMY9gNam5ZkAQBZQ8SZNSS89/view?usp=shari
 #### 2D Cluster Tiling
 
 ![](imgs/LightIncrease.png)
+
 [lower ms per frame is better]
+
+| Num Lights | Naive |	Forward+ |	Clustered Deferred |
+| ------------- | ------------- | ------------- | ------------- |
+|500|	34.48275862|	71.42857143|	16.66666667|
+|1000|	76.92307692|	166.6666667|	30.3030303|
+|2000|	142.8571429|	500|	76.92307692|
+|3000|	200|	500	|200|
 
 Across all approaches we see that ms per frame increases as the number of lights increases. When taking this data I set increased the max size of the cluster's "lights" array as I increased the number of lights since not doing this results in artifacts as the number of lights in the scene increases. This causes additional overhead when fetching memory for the clusters and their light indices, which I believe accounts for most of the performance degradation you can see in Forward+ and Clustered Deferred as the number of lights increases.
 
 ![](imgs/TileIncrease.png)
+
 [lower ms per frame is better]
+
+| Num Tiles |	Forward+ |	Clustered Deferred |
+| ------------- | ------------- | ------------- |
+|64	|166.6666667|	30.3030303|
+|256|	166.6666667|	29.41176471|
+|1024|	142.8571429|	25|
+|4096	|125	|24.3902439|
 
 Increasing the number of clusters/tiles on the screen generally decreased the time to generate a frame. This is due to the fact that by decreasing the size of the cluster, you make the lights in that cluster more specific to the fragments in it, which means there are less worthless lighting calculations where the light affects some fragments in a cluster but not others. There is memory and calculation overhead to adding more clusters, but in the data points shown above the reduction in irrelevant lighting calculations makes increasing the number of tiles worth it.
 
 #### 3D Clusters via Depth Slicing
 
 ![](imgs/ZSliceIncrease.png)
+
 [lower ms per frame is better]
+
+| Num Z Slices |	Forward+ |	Clustered Deferred |
+| ------------- | ------------- | ------------- |
+|0|	166.6666667|	30.3030303|
+|5|	142.8571429|	27.02702703|
+|8|	125|	25|
 
 In the previous graph, the tiles were just a 2D grid over the screen. However, I also implemented slicing these clusters up by depth to create even more clusters and further specifying the clusters to their fragments. Increasing the number of depth slices per 2D cluster improved performance by reducing the number of ms it took to generate a frame. Similar to the improvement discussed by increasing the number of 2D tiles/clusters, increasing the number of slices again specifies the lights assigned to each cluster to be more accurate to a larger percent of that cluster's fragments. Again this decreases the number of irrelevant lighting calculations per fragment, reducing the time it takes to generate a frame.
 
@@ -72,6 +95,7 @@ In the previous graph, the tiles were just a 2D grid over the screen. However, I
   - Tradeoffs: Since you have to do two passes and store the normal, position, and color of the first pass into textures, there is additional overhead for this method. This is also slightly more complicated to implement that basic forward rendering.
 
 ![](imgs/LightIncrease.png)
+
 [lower ms per frame is better]
 
 Looking at the graph shown above again, you can see that Clustered Deferred performs the best due to its avoidance of performing lighting calculations on blocked fragments.
