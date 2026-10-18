@@ -18,11 +18,11 @@ export class Lights {
     // colors are different for 8 and it still works?
     static readonly numFloatsPerLight = 11; // 2 vec3f aligned at 16 byte boundaries + vec2f + float
 
-    static readonly maxDepth = 25; // custom value for sponza
-    static readonly numClustersPerCell = 5; // how many clusters in depth direction stacked in each cell
-    static readonly maxNumLightsPerCluster = 501;
+    
+    static readonly clusterCubeZNum = 1; // how many clusters in depth direction stacked in each cell
+    static readonly maxNumLightsPerCluster = 1001;
     static readonly numFloatsPerCluster = 10 + Lights.maxNumLightsPerCluster; 
-    static readonly maxNumClusters = ((shaders.constants.numClustersInRow+2)*(shaders.constants.numClustersInRow+2))*Lights.numClustersPerCell;
+    static readonly maxNumClusters = ((shaders.constants.numClustersInRow+2)*(shaders.constants.numClustersInRow+2))*Lights.clusterCubeZNum;
 
     static readonly lightIntensity = 0.1;
 
@@ -70,7 +70,6 @@ export class Lights {
         });
 
         this.clusterSetStorageBuffer = device.createBuffer({
-            // TODO : change below to be based on number of clusters from set value
             label: "clusters",
             size: 16 + this.clustersArray.byteLength, // 16 for numLights + padding
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST

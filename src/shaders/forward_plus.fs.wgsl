@@ -35,6 +35,8 @@ struct FragmentInput
 @fragment
 fn main(in: FragmentInput) -> @location(0) vec4f
 {
+    let clusterCubeZLength = 25;
+
     // calculate cluster index from pixel pos
     let clusterHeight = u32(screenHeight);
     let clusterWidth = u32(screenWidth);
@@ -45,7 +47,7 @@ fn main(in: FragmentInput) -> @location(0) vec4f
     let clusterY = intFragY/clusterHeight;
     // CALCULATE BASED ON DEPTH
     let fragDepth = u32(distance(in.pos, camUniforms.pos));
-    let clusterZ = fragDepth/u32(5);
+    let clusterZ = fragDepth/u32(clusterCubeZLength);
     // UPDATE TO USE Z INDEX
     let clusterIndex = clusterZ*clustersPerRow*clustersPerRow + clusterY*clustersPerRow + clusterX;
 
@@ -72,9 +74,6 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
     var outputColor = diffuseColor.rgb * totalLightContrib;
     return vec4(outputColor, 1);
-
-    let fragDepthVis = distance(in.pos, camUniforms.pos)/25;
-    return vec4(fragDepthVis, fragDepthVis, fragDepthVis, 1);
     
 
 

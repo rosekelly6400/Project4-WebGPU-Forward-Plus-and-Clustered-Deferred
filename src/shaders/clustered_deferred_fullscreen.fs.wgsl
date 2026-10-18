@@ -33,10 +33,11 @@ struct FragmentOutput
 @fragment
 fn main(in: FragmentInput) -> FragmentOutput
 {
+    let clusterCubeZLength = 25;
     var out: FragmentOutput;
 
     // grab values from gbuffer textures
-    let fragposUV = vec2f(in.fragPos.x / (8*screenWidth), in.fragPos.y / (8*screenHeight));
+    let fragposUV = vec2f(in.fragPos.x / (clusterRowLength*screenWidth), in.fragPos.y / (clusterRowLength*screenHeight));
     let normalFromTex = textureSample(normalDepth, normalDepthSampler, fragposUV);
     let diffuseColor = textureSample(color, colorSampler, fragposUV);
     let posFromTex =  textureSample(positionTex, positionTexSampler, fragposUV);
@@ -51,7 +52,7 @@ fn main(in: FragmentInput) -> FragmentOutput
     let clusterY = intFragY/clusterHeight;
     // CALCULATE BASED ON DEPTH
     let fragDepth = u32(distance(posFromTex.xyz, camUniforms.pos));
-    let clusterZ = fragDepth/u32(5);
+    let clusterZ = fragDepth/u32(clusterCubeZLength);
     // UPDATE TO USE Z INDEX
     let clusterIndex = clusterZ*clustersPerRow*clustersPerRow + clusterY*clustersPerRow + clusterX;
 

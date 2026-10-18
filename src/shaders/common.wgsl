@@ -13,14 +13,14 @@ struct LightSet {
     lights: array<Light>
 }
 
-// MAX NUMBER OF LIGHTS IS 501
+// MAX NUMBER OF LIGHTS IS 1001
 struct Cluster {
     numLights: u32,
     minDepth: f32,
     maxDepth: f32,
     minCornerXY: vec2f,
     maxCornerXY: vec2f,
-    lightIndices: array<u32, 501>
+    lightIndices: array<u32, 1001>
 }
 
 // TODO-2: you may want to create a ClusterSet struct similar to LightSet
